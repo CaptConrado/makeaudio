@@ -1,0 +1,8 @@
+# Generated artifacts and source case material (often copyrighted) — never commit
+*.pdf
+*.mp3
+*.m4a
+*_raw.txt
+*_clean.txt
+.DS_Store
+__pycache__/
