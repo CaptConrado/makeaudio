@@ -27,6 +27,9 @@ fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Narration speed passed to edge-tts (e.g. +5% = 5% faster). Override with MAKEAUDIO_RATE.
+RATE="${MAKEAUDIO_RATE:-+5%}"
+
 for tool in python3 edge-tts; do
   command -v "$tool" >/dev/null 2>&1 || { echo "error: '$tool' not found in PATH" >&2; exit 1; }
 done
@@ -56,8 +59,8 @@ if [[ "$1" =~ ^https?:// ]]; then
   echo "==> Fetching and extracting article from $URL"
   python3 "$SCRIPT_DIR/clean_web.py" "$URL" "$clean" "${title_arg[@]}"
 
-  echo "==> Synthesizing speech (voice: $VOICE)"
-  edge-tts --file "$clean" --voice "$VOICE" --write-media "$out"
+  echo "==> Synthesizing speech (voice: $VOICE, rate: $RATE)"
+  edge-tts --file "$clean" --voice "$VOICE" --rate "$RATE" --write-media "$out"
 
   echo "==> Done: $out"
   command -v afinfo >/dev/null 2>&1 && afinfo "$out" 2>/dev/null | grep -i "estimated duration" || true
@@ -91,8 +94,8 @@ pdftotext -layout "$PDF" "$raw"
 echo "==> Cleaning text"
 python3 "$SCRIPT_DIR/clean_case.py" "$raw" "$clean" "$TITLE" "$START"
 
-echo "==> Synthesizing speech (voice: $VOICE)"
-edge-tts --file "$clean" --voice "$VOICE" --write-media "$out"
+echo "==> Synthesizing speech (voice: $VOICE, rate: $RATE)"
+edge-tts --file "$clean" --voice "$VOICE" --rate "$RATE" --write-media "$out"
 
 echo "==> Done: $out"
 command -v afinfo >/dev/null 2>&1 && afinfo "$out" 2>/dev/null | grep -i "estimated duration" || true

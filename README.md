@@ -98,6 +98,17 @@ edge-tts --list-voices | grep en-US
 Good narration voices: `en-US-AndrewNeural` (default), `en-US-BrianNeural`,
 `en-US-AriaNeural`, `en-US-EmmaNeural`.
 
+## Narration speed
+
+By default narration is rendered **5% faster** than normal (`--rate +5%`).
+Override per run with the `MAKEAUDIO_RATE` environment variable:
+
+```bash
+MAKEAUDIO_RATE=+0%   makeaudio article.pdf "Title."    # normal speed
+MAKEAUDIO_RATE=+15%  makeaudio https://example.com/post  # 15% faster
+MAKEAUDIO_RATE=-10%  makeaudio article.pdf "Title."    # 10% slower
+```
+
 ## Alias
 
 If you ran the included setup, `~/.zshrc` has:
