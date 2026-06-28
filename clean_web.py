@@ -60,11 +60,34 @@ if not title and meta:
         bits.append("From " + site)
     title = ". ".join(b for b in bits if b)
 
+# Drop common top-of-article crumbs: a leading line that just repeats the
+# headline, a bracketed [SUBTITLE] line, or a "SEE ALSO" navigation crumb.
+headline = (title.split(". By ")[0].split(". From ")[0].strip()
+            if title else None)
+kept = []
+for ln in body.split("\n"):
+    s = ln.strip()
+    low = s.lstrip("□▪▶▸◦•·*-–— ").strip()
+    # Standalone navigation crumbs can appear anywhere; always drop them.
+    if re.fullmatch(r"(?i)(see also|share|leave a comment|subscribe|give a gift subscription)\W*", low):
+        continue
+    if not kept:  # only trim these before the first real paragraph
+        if headline and s.rstrip(".") == headline.rstrip("."):
+            continue
+        if re.fullmatch(r"\[.*\]", s):
+            continue
+    kept.append(ln)
+body = "\n".join(kept)
+
 text = (title + ".\n\n" + body) if title else body
 
 # Tidy for narration.
 text = re.sub(r"https?://\S+", "", text)          # drop stray URLs
 text = re.sub(r"\[[0-9]+\]", "", text)            # drop [12] reference markers
+text = re.sub(r"[□▪▶▸◦�]", " ", text)             # drop box/replacement glyphs
+# Strip inline footnote numbers attached to a word/punctuation (e.g. "ago,1",
+# "overwhelming.2"). Decimal/thousands-safe: the char two back must be non-digit.
+text = re.sub(r"(?<=[^0-9\s][,.\?\!\"”’\)])\d{1,3}(?=\s|$)", "", text)
 text = re.sub(r"[ \t]+", " ", text)
 text = re.sub(r" *\n", "\n", text)
 text = re.sub(r"\n{3,}", "\n\n", text)
