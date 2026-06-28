@@ -57,7 +57,36 @@ if [[ "$1" =~ ^https?:// ]]; then
   [[ "$NAME_OR_TITLE" == *" "* ]] && title_arg=("$NAME_OR_TITLE")
 
   echo "==> Fetching and extracting article from $URL"
-  python3 "$SCRIPT_DIR/clean_web.py" "$URL" "$clean" "${title_arg[@]}"
+  python3 "$SCRIPT_DIR/clean_web.py" "$URL" "$clean" ${title_arg[@]+"${title_arg[@]}"}
+
+  echo "==> Synthesizing speech (voice: $VOICE, rate: $RATE)"
+  edge-tts --file "$clean" --voice "$VOICE" --rate "$RATE" --write-media "$out"
+
+  echo "==> Done: $out"
+  command -v afinfo >/dev/null 2>&1 && afinfo "$out" 2>/dev/null | grep -i "estimated duration" || true
+  exit 0
+fi
+
+# -------------------------------------------------------------- Word doc mode -
+if [[ "$1" == *.docx || "$1" == *.doc ]]; then
+  command -v textutil >/dev/null 2>&1 || { echo "error: 'textutil' not found (macOS only)" >&2; exit 1; }
+  DOC="$1"
+  TITLE="${2:-}"
+  VOICE="${3:-en-US-AndrewNeural}"
+  [[ -f "$DOC" ]] || { echo "error: doc not found: $DOC" >&2; exit 1; }
+
+  dir="$(cd "$(dirname "$DOC")" && pwd)"
+  base="$(basename "$DOC")"; base="${base%.*}"
+  raw="$dir/${base}_raw.txt"
+  clean="$dir/${base}_clean.txt"
+  out="$dir/${base}.mp3"
+
+  echo "==> Extracting text from $DOC"
+  textutil -convert txt "$DOC" -output "$raw"
+
+  echo "==> Cleaning text"
+  title_arg=(); [[ -n "$TITLE" ]] && title_arg=("$TITLE")
+  python3 "$SCRIPT_DIR/clean_doc.py" "$raw" "$clean" ${title_arg[@]+"${title_arg[@]}"}
 
   echo "==> Synthesizing speech (voice: $VOICE, rate: $RATE)"
   edge-tts --file "$clean" --voice "$VOICE" --rate "$RATE" --write-media "$out"
