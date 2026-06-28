@@ -53,6 +53,17 @@ make_audio.sh <Case.pdf> "<Spoken title>" ["<Start phrase>"] ["<Voice>"]
 
 Outputs land next to the PDF: `<Case>_raw.txt`, `<Case>_clean.txt`, `<Case>.mp3`.
 
+### Word doc mode (`.doc` / `.docx`, macOS)
+
+```bash
+make_audio.sh <Doc.docx> ["<Spoken title>"] ["<Voice>"]
+```
+
+Uses macOS `textutil` to extract the text, flattens bullet markers, and reads it
+as-is (Word docs are already clean prose). The title override is optional — omit
+it and the document's own first line stands as the opening. Outputs land next to
+the doc: `<Doc>_raw.txt`, `<Doc>_clean.txt`, `<Doc>.mp3`.
+
 ### Web mode
 
 ```bash
